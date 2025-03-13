@@ -40,6 +40,13 @@ Use winecfg to mount cdi-sdk as drive D:
 
 ### Compiling for CD booting
 
+Keep in mind that this application is designed to be started with
+already existing CDs in mind. I don't recommend to burn this as a CD
+as you will have to change the software very often.
+
+Please use this only with emulators that lack a serial port emulation!
+Ensure to add a delay at the start and change the CD during execution.
+
 	WINEPATH=D:/DOS/BIN wine D:/dos/bin/bmake.exe link_cd
 
 ### Starting via serial stub on real CD-i
@@ -65,13 +72,6 @@ for the next run.
 	dosbox master.bat -exit
 
 The resulting image can be loaded into cdiemu
-
-### Conversion into CUE/BIN
-
-You need to do that to use the image in MAME or the MiSTer core. Keep in mind that the tool
-requires mouse control.
-
-	wine tocsplit.exe
 
 ### Compiling, mastering and CUE/BIN conversion in one step
 
