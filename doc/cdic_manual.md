@@ -76,15 +76,24 @@ Q Subcode data is available at the same position as during TOC fetch
     CDIC_DBUF = 0xc000;     /* Execute command */
 
 The CDIC will cause an IRQ for every available sector.
-Check Bit 15 of XBUF. If set, proceed to check to check the lowest nibble of DBUF.
+Check Bit 15 of XBUF. If set, proceed to check the lowest nibble of DBUF.
 It should either be 0 for data buffer 0 and 1 for data buffer 1.
 Check the first 2 words of the mentioned buffer.
 The time code of the expected sectors should be stored there. Proceed to use DMA
 or other means to grab the data.
 
+To stop the CDIC from providing data.
+
+	CDIC_DBUF = 0;
+
+Keep in mind that the CD reading process still continues in the background.
+Data reading can be resumed at the current position of the laser.
+
+    CDIC_DBUF = 0x4000;
+
 ### MODE 2
 
-Similar to MODE 1 but with the possiblity to filter for data. The CDIC allows multiple interleaved threads on a track.
+Similar to MODE 1 but with the possiblity to apply channel and file filters. The CDIC allows multiple interleaved threads on a track.
 
     CDIC_FILE = 0x0100;     /* MODE2 File filter */
     CDIC_CHAN = 0x0001;     /* Only channel 0! */

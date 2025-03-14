@@ -193,7 +193,7 @@ void test_cmd24()
 	print_state();
 	print_state();
 
-	/* Output of test
+	/* Output of test when Audio CD is inserted
 	# test_cmd24()
 	State INT: 7fff ffff 5801 d7fe  Now: 7fff 7fff 5801 d7fe
 	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 5800 d7fe
@@ -215,6 +215,32 @@ void test_cmd24()
 	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 1801 d7fe
 	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 1800 d7fe
 	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 1800 d7fe
+
+	Output of test with Zelda - Wand of Gamelon inserted
+	# test_cmd24()
+	State INT: 7fff ffff 4801 d7fe  Now: 7fff 7fff 4801 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 4800 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 4800 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 4800 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 4801 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 4801 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 4801 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 4800 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 4800 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 4800 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff c801 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 4801 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 4801 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 0800 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 0800 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 0800 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 0801 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 0801 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 0801 d7fe
+	State INT: 0000 0000 0000 0000  Now: 7fff 7fff 0801 d7fe
+
+	Note the difference: The Audio CD has bit 12 set.
+	It is interesting that bit 0 of DBUF still toggles
 	*/
 }
 
@@ -232,12 +258,11 @@ char *argv[];
 
 	example_crc_calculation();
 
+	/* A freshly booted 210/05 has the audio muted.
+	 * We fix that here by applying a standard attenuation.
+	 */
 	slave_stereo_audio_cd_attenuation();
 	slave_unmute();
-
-	/* Select ONE test to execute! We don't want the tests to change each other... 
-	 * The reset mechanism is still not fully understood
-	*/
 
 	/*
 	These tests are for Audio CDs. Insert a CD before execution:
@@ -249,18 +274,26 @@ char *argv[];
 	test_xa_play();
 	test_mode2_read();
 	test_mode1_read();
+	test_mode2_read_stop_read();
+	test_audiomap_to_xa_play(0);
+
+	These tests are for "Zelda's Adventure". Insert it before execution:
+	test_audiomap_to_xa_play(1);
 
 	These tests are for "Tetris". Insert it before execution:
 	test_xa_read_during_read();
-	test_xa_channel_change();
 
-	These tests don't require any CD to be used. Still have one inside to have the tests working:
+	These tests don't require any CD to be used.
+	Still have one inside to have the tests working:
 	test_audiomap_play_abort();
 	test_audiomap_play_stop();
 	test_cmd23();
 	test_cmd24();
 	*/
 
+	/* Select ONE test to execute! We don't want the tests to change each other...
+	 * The reset mechanism is still not fully understood
+	 */
 
 	resetcdic();
 	printf("\nTest finished. Press Ctrl-C to reset!\n");
