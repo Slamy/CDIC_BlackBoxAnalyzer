@@ -30,3 +30,17 @@ void slave_stereo_audio_cd_attenuation()
 	SLAVE_CH2 = 0x00;
 	SLAVE_CH2 = 0x00;
 }
+
+void slave_hotel_mario()
+{
+	/* Hotel Mario - Everything on max.
+	 * Left to right, Right to left,
+	 * Everything in the center!
+	 */
+	SLAVE_CH2 = 0xc0;
+	SLAVE_CH2 = 0x00;
+	SLAVE_CH2 = 0x00;
+	SLAVE_CH2 = 0x00;
+	SLAVE_CH2 = 0x00;
+}
+

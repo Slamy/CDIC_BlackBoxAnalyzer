@@ -68,6 +68,7 @@ TODO Unused?
 | ------ | -------------------------------------------------------------- |
 | 15     | Set by CDIC when playback of single ADPCM buffer has finished. |
 |        | Reset on read. Causes IRQ when AUDCTL bit 13 is set.           |
+|        | Is only set, when ACHAN is 0.                                  |
 | 14 - 0 | Always reads as all bits set ?                                 |
 
 ## Extra Buffer (XBUF) @ 0x3FF6

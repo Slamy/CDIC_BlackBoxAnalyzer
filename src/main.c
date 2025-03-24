@@ -294,6 +294,7 @@ char *argv[];
 	/* Select ONE test to execute! We don't want the tests to change each other...
 	 * The reset mechanism is still not fully understood
 	 */
+	test_volumes();
 
 	resetcdic();
 	printf("\nTest finished. Press Ctrl-C to reset!\n");

@@ -245,3 +245,70 @@ void test_audiomap_play_abort_via_play_of_ff()
 	No IRQ. No Bit 15 of ABUF.
 	*/
 }
+
+void wait_for_abuf_int()
+{
+	int_abuf = 0;
+	cdic_irq_occured = 0;
+	for (;;)
+	{
+		if (cdic_irq_occured)
+		{
+			cdic_irq_occured = 0;
+			if (int_abuf & 0x8000)
+			{
+				return;
+			}
+		}
+	}
+}
+
+/* Plays the ribbit sample of frog feast once */
+void test_single_ribbit()
+{
+	while (CDIC_AUDCTL & 0x0800)
+		;
+
+	/* Copy sample data to ADPCM buffers */
+	/* [:cdic] Coding 04s, 1 channels, 4 bits, 000049d4 frequency ->  213 ms between IRQs */
+	*((unsigned short *)0x30280a) = 0x0004;
+	*((unsigned short *)0x30320a) = 0x0004;
+	memcpy((char *)0x30280c, RibbitSoundData, 2304);
+	memcpy((char *)0x30320c, RibbitSoundData + 2304, 2304);
+
+	CDIC_AUDCTL = 0x2800;
+
+	wait_for_abuf_int(); /* Wait for playback of 0x2800 */
+
+	/* Gracefully stop audiomap with 0xff coding */
+	*((unsigned short *)0x30280a) = 0x00ff;
+
+	wait_for_abuf_int();  /* Wait for playback of 0x3200 */
+
+	*((unsigned short *)0x30320a) = 0x00ff;
+
+	if ((int_audctl & 1) == 0)
+	{
+		printf("Finished audiomap bit not set!\n");
+		print_state();
+	}
+}
+
+void test_volumes()
+{
+	int i;
+	for (i = 0; i < 4; i++)
+	{
+		print("Audio CD\n");
+		slave_stereo_audio_cd_attenuation();
+		test_single_ribbit();
+
+		print("Hotel Mario\n");
+		slave_hotel_mario();
+		test_single_ribbit();
+
+		print("Inverted Audio CD\n");
+		slave_stereo_inverted_attenuation();
+		test_single_ribbit();
+	}
+}
