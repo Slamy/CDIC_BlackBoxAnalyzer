@@ -12,6 +12,7 @@
 #include "framework.h"
 
 char cdic_irq_occured = 0;
+char slave_irq_occured = 0;
 unsigned short int_abuf = 0;
 unsigned short int_xbuf = 0;
 unsigned short int_dbuf = 0;
@@ -89,10 +90,12 @@ void take_system()
 	/* Switch to actual IRQ handler */
 	*((unsigned long *)0x200) = CDIC_IRQ; /* vector delivered by CDIC */
 
+	/* Switch to actual IRQ handler */
+	*((unsigned long *)0x68) = SLAVE_IRQ; /* vector 26 */
+
 #if 0
 	*((unsigned long *)0xF8) = TIMER_IRQ; /* vector 62 */
 	*((unsigned long *)0xF4) = VIDEO_IRQ; /* vector 61 */
-	*((unsigned long *)0x68) = SLAVE_IRQ; /* vector 26 */
 #endif
 }
 
@@ -244,6 +247,8 @@ void test_cmd24()
 	*/
 }
 
+unsigned char slave_buf[20];
+
 int main(argc, argv)
 int argc;
 char *argv[];
@@ -251,52 +256,55 @@ char *argv[];
 	int bytes;
 	int wait;
 	int framecnt = 0;
+	int i = 0;
 
 	take_system();
 
-	print("Hello CDIC!\n");
+	printf("Hello CDIC!\n");
+	SLAVE_CH2 = 0x8d;
 
-	example_crc_calculation();
+	for (;;)
+	{
+		i++;
+		if (i == 20000)
+		{
+			printf("Timeout!\n");
+			i = 0;
+		}
 
-	/* A freshly booted 210/05 has the audio muted.
-	 * We fix that here by applying a standard attenuation.
-	 */
-	slave_stereo_audio_cd_attenuation();
-	slave_unmute();
+		if (slave_irq_occured)
+		{
+			printf("Read Slave\n");
 
-	/*
-	These tests are for Audio CDs. Insert a CD before execution:
-	test_fetch_toc();
-	test_cdda_play();
-	test_where_is_cdda();
+			slave_irq_occured = 0;
+#if 0
+			slave_buf[0] = SLAVE_CH0;
+			slave_buf[1] = SLAVE_CH0;
+			slave_buf[2] = SLAVE_CH0;
+			slave_buf[3] = SLAVE_CH0;
 
-	These tests are for "Zelda - Wand of Gamelon". Insert it before execution:
-	test_xa_play();
-	test_mode2_read();
-	test_mode1_read();
-	test_mode2_read_stop_read();
-	test_audiomap_to_xa_play(0);
+			slave_buf[4] = SLAVE_CH1;
+			slave_buf[5] = SLAVE_CH1;
+			slave_buf[6] = SLAVE_CH1;
+			slave_buf[7] = SLAVE_CH1;
 
-	These tests are for "Zelda's Adventure". Insert it before execution:
-	test_audiomap_to_xa_play(1);
+			slave_buf[8] = SLAVE_CH2;
+			slave_buf[9] = SLAVE_CH2;
+			slave_buf[10] = SLAVE_CH2;
+			slave_buf[11] = SLAVE_CH2;
 
-	These tests are for "Tetris". Insert it before execution:
-	test_xa_read_during_read();
+			slave_buf[12] = SLAVE_CH3;
+			slave_buf[13] = SLAVE_CH3;
+			slave_buf[14] = SLAVE_CH3;
+			slave_buf[15] = SLAVE_CH3;
+#endif
+			printf("%02x %02x %02x %02x\n", slave_buf[0], slave_buf[1], slave_buf[2], slave_buf[3]);
+			printf("%02x %02x %02x %02x\n", slave_buf[4], slave_buf[5], slave_buf[6], slave_buf[7]);
+			printf("%02x %02x %02x %02x\n", slave_buf[8], slave_buf[9], slave_buf[10], slave_buf[11]);
+			printf("%02x %02x %02x %02x\n\n", slave_buf[12], slave_buf[13], slave_buf[14], slave_buf[15]);
+		}
+	}
 
-	These tests don't require any CD to be used.
-	Still have one inside to have the tests working:
-	test_audiomap_play_abort();
-	test_audiomap_play_stop();
-	test_cmd23();
-	test_cmd24();
-	*/
-
-	/* Select ONE test to execute! We don't want the tests to change each other...
-	 * The reset mechanism is still not fully understood
-	 */
-	test_volumes();
-
-	resetcdic();
 	printf("\nTest finished. Press Ctrl-C to reset!\n");
 	for (;;)
 		;

@@ -48,6 +48,37 @@ VIDEO_IRQ:
 
 
 SLAVE_IRQ:
+	move.l a6,-(sp)
+	move.l a6_value(pc),a6
+	move.l d0,-(sp)
+	move.l a0,-(sp)
+
+	move.b #1,slave_irq_occured(a6) ; Indicate IRQ occured
+
+	lea slave_buf(a6),a0
+	move.b $310001,(a0)+
+	move.b $310001,(a0)+
+	move.b $310001,(a0)+
+	move.b $310001,(a0)+
+
+	move.b $310003,(a0)+
+	move.b $310003,(a0)+
+	move.b $310003,(a0)+
+	move.b $310003,(a0)+
+
+	move.b $310005,(a0)+
+	move.b $310005,(a0)+
+	move.b $310005,(a0)+
+	move.b $310005,(a0)+
+
+	move.b $310007,(a0)+
+	move.b $310007,(a0)+
+	move.b $310007,(a0)+
+	move.b $310007,(a0)+
+
+	move.l (sp)+,a0
+	move.l (sp)+,d0
+	move.l (sp)+,a6
 
 	rte
 

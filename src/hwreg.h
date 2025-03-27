@@ -50,6 +50,7 @@
 #define SLAVE_CH0 (*((unsigned char *)0x310001))
 #define SLAVE_CH1 (*((unsigned char *)0x310003))
 #define SLAVE_CH2 (*((unsigned char *)0x310005))
+#define SLAVE_CH3 (*((unsigned char *)0x310007))
 
 /* --- SCC68070 DMA --- */
 
