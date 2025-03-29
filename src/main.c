@@ -69,6 +69,8 @@ void print(char *format, ...)
 #endif
 }
 
+#define MISTER_CDI
+
 /* Overwrite CDIC driver IRQ handling */
 void take_system()
 {
@@ -76,6 +78,7 @@ void take_system()
 	store_a6();
 
 	CDIC_IVEC = 0x2480;
+#ifndef MISTER_CDI
 	/* Only in SUPERVISOR mode, on-chip peripherals can be configured */
 	/* We abuse a CDIC IRQ to set the baud rate to 19200 */
 	*((unsigned long *)0x200) = SET_UART_BAUD; /* vector delivered by CDIC */
@@ -86,6 +89,7 @@ void take_system()
 		;
 
 	cdic_irq_occured = 0;
+#endif
 
 	/* Switch to actual IRQ handler */
 	*((unsigned long *)0x200) = CDIC_IRQ; /* vector delivered by CDIC */
@@ -302,6 +306,21 @@ char *argv[];
 			printf("%02x %02x %02x %02x\n", slave_buf[4], slave_buf[5], slave_buf[6], slave_buf[7]);
 			printf("%02x %02x %02x %02x\n", slave_buf[8], slave_buf[9], slave_buf[10], slave_buf[11]);
 			printf("%02x %02x %02x %02x\n\n", slave_buf[12], slave_buf[13], slave_buf[14], slave_buf[15]);
+
+			/*
+			Press Play
+			Read Slave
+			ff ff ff ff
+			a1 87 20 ff
+			ff ff ff ff
+			ff ff ff ff
+
+			Release Play
+			ff ff ff ff
+			a1 87 00 ff
+			ff ff ff ff
+			ff ff ff ff
+			*/
 		}
 	}
 
