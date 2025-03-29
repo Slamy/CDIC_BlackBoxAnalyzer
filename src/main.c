@@ -69,7 +69,6 @@ void print(char *format, ...)
 #endif
 }
 
-#define MISTER_CDI
 
 /* Overwrite CDIC driver IRQ handling */
 void take_system()
@@ -78,18 +77,6 @@ void take_system()
 	store_a6();
 
 	CDIC_IVEC = 0x2480;
-#ifndef MISTER_CDI
-	/* Only in SUPERVISOR mode, on-chip peripherals can be configured */
-	/* We abuse a CDIC IRQ to set the baud rate to 19200 */
-	*((unsigned long *)0x200) = SET_UART_BAUD; /* vector delivered by CDIC */
-	cdic_irq_occured = 0;
-	CDIC_CMD = 0x2e;	/* Command = Update */
-	CDIC_DBUF = 0xc000; /* Execute command */
-	while (!cdic_irq_occured)
-		;
-
-	cdic_irq_occured = 0;
-#endif
 
 	/* Switch to actual IRQ handler */
 	*((unsigned long *)0x200) = CDIC_IRQ; /* vector delivered by CDIC */
