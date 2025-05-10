@@ -1,6 +1,19 @@
 #ifndef _HWREG_H
 #define _HWREG_H
 
+/* --- FMA ---  */
+#define FMA_CMD (*((unsigned short *)0x0E03000))
+#define FMA_R04 (*((unsigned short *)0x0E03004))
+#define FMA_R06 (*((unsigned short *)0x0E03006))
+#define FMA_STRM (*((unsigned short *)0x0E03008))
+#define FMA_DCLK (*((unsigned long *)0x0E03010))
+#define FMA_RUN (*((unsigned short *)0x0E03018))
+#define FMA_ISR (*((unsigned short *)0x0E0301A))
+#define FMA_IER (*((unsigned short *)0x0E0301C))
+#define FMA_DSPA (*((unsigned short *)0x0E03022))
+#define FMA_DSPD (*((unsigned short *)0x0E03024))
+#define FMA_IVEC (*((unsigned short *)0x0E0300C))
+
 /* --- IMS66490 CD-Interface Controller (CDIC) ---  */
 
 /* Known buffers in RAM, filled by the CDIC */

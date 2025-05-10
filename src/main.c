@@ -12,10 +12,13 @@
 #include "framework.h"
 
 char cdic_irq_occured = 0;
+char fma_irq_occured = 0;
 unsigned short int_abuf = 0;
 unsigned short int_xbuf = 0;
 unsigned short int_dbuf = 0;
 unsigned short int_audctl = 0;
+unsigned short int_fma_status = 0;
+unsigned int int_fma_dclk = 0;
 
 /* Used to store register information during a test */
 /* We don't want to make any prints during the test as the baud rate is too slow */
@@ -88,6 +91,7 @@ void take_system()
 
 	/* Switch to actual IRQ handler */
 	*((unsigned long *)0x200) = CDIC_IRQ; /* vector delivered by CDIC */
+	*((unsigned long *)0x1EC) = FMA_IRQ;  /* vector delivered by CDIC */
 
 #if 0
 	*((unsigned long *)0xF8) = TIMER_IRQ; /* vector 62 */
@@ -244,6 +248,111 @@ void test_cmd24()
 	*/
 }
 
+/**
+Prints 2 charactes to UART on every FMA Timer IRQ
+It shows that one IRQ occurs every 10 ms
+*/
+void test_fma_timertick_irq_frequency()
+{
+	int i, j;
+
+	/* I don't understand any of this, but it seems to be required */
+	FMA_CMD = 1;
+	FMA_IER = 0;
+	print("FMA_ISR %x\n", FMA_ISR);
+	FMA_R06 = 0x0900;
+
+	FMA_IVEC = 0x807B;
+	FMA_DSPA = 0;
+	FMA_DSPD = 0x00F2;
+	FMA_RUN = 1;
+	FMA_STRM = 0;
+	FMA_R04 = 0x0007;
+	print("FMA_ISR %x\n", FMA_ISR);
+
+	FMA_IER = 0x013C;
+	FMA_CMD = 2;
+
+	bufpos = 0;
+	fma_irq_occured = 0;
+	while (bufpos < 90)
+	{
+		if (fma_irq_occured)
+		{
+			fma_irq_occured = 0;
+			printf("A\n");
+		}
+	}
+}
+
+/**
+Analyzes the value of the DCLK register on every IRQ to
+measure the frequency it counts up.
+The test \ref test_fma_timertick_irq_frequency has shown
+that one IRQ occurs every 10ms.
+*/
+void test_fma_timertick_dclk_values()
+{
+	int i, j;
+
+	/* I don't understand any of this, but it seems to be required */
+	FMA_CMD = 1;
+	FMA_IER = 0;
+	print("FMA_ISR %x\n", FMA_ISR);
+	FMA_R06 = 0x0900;
+
+	FMA_IVEC = 0x807B;
+	FMA_DSPA = 0;
+	FMA_DSPD = 0x00F2;
+	FMA_RUN = 1;
+	FMA_STRM = 0;
+	FMA_R04 = 0x0007;
+	print("FMA_ISR %x\n", FMA_ISR);
+
+	FMA_IER = 0x013C;
+	FMA_CMD = 2;
+
+	bufpos = 0;
+	fma_irq_occured = 0;
+	while (bufpos < 90)
+	{
+		if (fma_irq_occured)
+		{
+			fma_irq_occured = 0;
+			reg_buffer[bufpos][0] = int_fma_status;
+			reg_buffer[bufpos][1] = int_fma_dclk;
+			timecnt = 0;
+			bufpos++;
+		}
+
+		timecnt++;
+
+		if (timecnt > 300000)
+		{
+			printf("Timeout!\n");
+			break;
+		}
+	}
+
+	for (i = 0; i < bufpos - 1; i++)
+	{
+		printf("%3d %04x %04x %d\n", i, reg_buffer[i][0], reg_buffer[i][1], reg_buffer[i + 1][1] - reg_buffer[i][1]);
+	}
+
+	/*
+	Example output showing that ~457 equals 10ms.
+	74 0100 de56d 458
+	75 0100 de737 457
+	76 0100 de900 457
+	77 0100 deac9 457
+	78 0100 dec92 457
+	79 0100 dee5b 457
+
+	We can conclude 45700 Hz from this.
+	Note how close this is to half of 90 kHz which is the the timebase of MPEG
+	*/
+}
+
 int main(argc, argv)
 int argc;
 char *argv[];
@@ -265,31 +374,9 @@ char *argv[];
 	slave_unmute();
 
 	/*
-	These tests are for Audio CDs. Insert a CD before execution:
-	test_fetch_toc();
-	test_cdda_play();
-	test_where_is_cdda();
-
-	These tests are for "Zelda - Wand of Gamelon". Insert it before execution:
-	test_xa_play();
-	test_mode2_read();
-	test_mode1_read();
-	test_mode2_read_stop_read();
-	test_audiomap_to_xa_play(0);
-
-	These tests are for "Zelda's Adventure". Insert it before execution:
-	test_audiomap_to_xa_play(1);
-
-	These tests are for "Tetris". Insert it before execution:
-	test_xa_read_during_read();
-
-	These tests don't require any CD to be used.
-	Still have one inside to have the tests working:
-	test_audiomap_play_abort();
-	test_audiomap_play_stop();
-	test_cmd23();
-	test_cmd24();
+	test_fma_timertick_irq_frequency();
 	*/
+	test_fma_timertick_dclk_values();
 
 	/* Select ONE test to execute! We don't want the tests to change each other...
 	 * The reset mechanism is still not fully understood
