@@ -31,6 +31,25 @@ FMA_IRQ:
 
     rte
 
+FMV_IRQ:
+	move.l a6,-(sp)
+	move.l a6_value(pc),a6
+	move.l d0,-(sp)
+
+	move.w $E04062,d0 ; clear flags
+	move.w d0,int_fmv_status(a6)
+
+	move.w $E04088,d0 ; clear flags
+	move.w $E040E6,d0 ; clear flags
+	move.w $E04092,d0 ; clear flags
+
+	move.b #1,fmv_irq_occured(a6) ; Indicate IRQ occured
+
+	move.l (sp)+,d0
+	move.l (sp)+,a6
+
+    rte
+
 CDIC_IRQ:
 	move.l a6,-(sp)
 	move.l a6_value(pc),a6

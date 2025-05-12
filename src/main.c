@@ -13,11 +13,13 @@
 
 char cdic_irq_occured = 0;
 char fma_irq_occured = 0;
+char fmv_irq_occured = 0;
 unsigned short int_abuf = 0;
 unsigned short int_xbuf = 0;
 unsigned short int_dbuf = 0;
 unsigned short int_audctl = 0;
 unsigned short int_fma_status = 0;
+unsigned short int_fmv_status = 0;
 unsigned int int_fma_dclk = 0;
 
 /* Used to store register information during a test */
@@ -92,6 +94,7 @@ void take_system()
 	/* Switch to actual IRQ handler */
 	*((unsigned long *)0x200) = CDIC_IRQ; /* vector delivered by CDIC */
 	*((unsigned long *)0x1EC) = FMA_IRQ;  /* vector delivered by CDIC */
+	*((unsigned long *)0x168) = FMV_IRQ;  /* vector delivered by CDIC */
 
 #if 0
 	*((unsigned long *)0xF8) = TIMER_IRQ; /* vector 62 */
@@ -353,6 +356,132 @@ void test_fma_timertick_dclk_values()
 	*/
 }
 
+/*
+Plays "blue nebula" of the SkyWays Preview 20250326
+https://twburn.itch.io/skyways
+*/
+void test_fmv_skyways()
+{
+	unsigned short *dbuf;
+	int i, j;
+
+	CDIC_FILE = 0x0100;		/* MODE2 File filter */
+	CDIC_CHAN = 0x0001;		/* We want all the channels! */
+	CDIC_ACHAN = 0x0000;	/* Reset to 0, to fetch even audio sectors into normal data buffers */
+	CDIC_TIME = 0x01396800; /* MSF */
+	CDIC_CMD = CMD_MODE2;	/* Command = Read MODE2 */
+	CDIC_DBUF = 0xc000;		/* Execute command */
+
+	FMV_IVEC = 0x02D4;
+
+#if 1
+	FMV_VIDCMD = 0x0120;
+	FMV_SYSCMD = 0x2000;
+	print("FMV_ISR %x\n", FMV_ISR);
+	FMV_RF4 = 0x01BF;
+	FMV_RF2 = 0x1228;
+	FMV_R9C = 0x0000;
+	FMV_RC6 = 0x8801;
+	FMV_DECOFF = 0;
+	FMV_SCRPOS = 0;
+	FMV_DECWIN = 0x00010000;
+	FMV_IVEC = 0x02D4;
+
+	FMV_IER = 0x2000;
+
+	FMV_VIDCMD = 0x000C; /* WIN? */
+	FMV_STRM = 0x0000;
+	FMV_IMGRT = 0x0003;
+	FMV_IMGSZ = 0x01800118;
+
+	FMV_VIDCMD = 0x0020;
+	FMV_RC6 = 0x882D;
+	FMV_R88 = 0x0000;
+
+	FMV_SYSCMD = 0x0100; /* RESET? */
+	FMV_R92 = 0x0000;
+	FMV_R88 = 0x0000;
+
+	FMV_SYSCMD = 0x1000; /* START? */
+	FMV_RA0 = 0xffff;
+	FMV_TCNT = 0x0037;
+	FMV_TRLD = 0x0037;
+	FMV_IER = 0xf7cf;
+#endif
+
+#define WORDCNT (0x0484 + 6)
+	bufpos = 0;
+	fma_irq_occured = 0;
+	fmv_irq_occured = 0;
+	while (bufpos < 90)
+	{
+		if (cdic_irq_occured)
+		{
+			cdic_irq_occured = 0;
+			dbuf = (int_dbuf & 1) ? CDIC_RAM_DBUF1 : CDIC_RAM_DBUF0;
+
+			reg_buffer[bufpos][0] = dbuf[4];
+			reg_buffer[bufpos][1] = dbuf[5];
+			reg_buffer[bufpos][2] = dbuf[6];
+			reg_buffer[bufpos][3] = dbuf[7];
+
+			if (dbuf[3] & 0x0200)
+			{
+				/* This is the video stream */
+				for (i = 0; i < 6; i++)
+				{
+					FMV_XFER = dbuf[6 + i];
+				}
+			}
+
+			if (dbuf[3] & 0x0400)
+			{
+				/* This is the audio stream */
+			}
+
+			timecnt = 0;
+			bufpos++;
+		}
+
+		if (fmv_irq_occured)
+		{
+			fmv_irq_occured = 0;
+
+			if (int_fmv_status == 0x0900 || int_fmv_status == 0x0100)
+			{
+				/* Ignore timer and vsync alone */
+			}
+			else
+			{
+				reg_buffer[bufpos][0] = 0x42;
+				reg_buffer[bufpos][1] = int_fmv_status;
+				reg_buffer[bufpos][2] = 0;
+				reg_buffer[bufpos][3] = FMV_TIMECD;
+				bufpos++;
+			}
+		}
+
+		timecnt++;
+
+		if (timecnt > 300000)
+		{
+			printf("Timeout!\n");
+			break;
+		}
+	}
+
+	for (i = 0; i < bufpos; i++)
+	{
+		printf("%3d ", i);
+		for (j = 0; j < 4; j++)
+		{
+			printf(" %04x", reg_buffer[i][j]);
+		}
+
+		printf("\n");
+	}
+}
+
 int main(argc, argv)
 int argc;
 char *argv[];
@@ -375,8 +504,9 @@ char *argv[];
 
 	/*
 	test_fma_timertick_irq_frequency();
-	*/
 	test_fma_timertick_dclk_values();
+	*/
+	test_fmv_skyways();
 
 	/* Select ONE test to execute! We don't want the tests to change each other...
 	 * The reset mechanism is still not fully understood

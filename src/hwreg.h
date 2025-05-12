@@ -14,6 +14,44 @@
 #define FMA_DSPD (*((unsigned short *)0x0E03024))
 #define FMA_IVEC (*((unsigned short *)0x0E0300C))
 
+/* --- FMV ---  */
+
+#define FMV_IMGSZ (*((unsigned long *)0x0E04002))
+#define FMV_IMGRT (*((unsigned short *)0x0E04006))
+#define FMV_IER (*((unsigned short *)0x0E04060))
+#define FMV_ISR (*((unsigned short *)0x0E04062))
+#define FMA_VOFF (*((unsigned short *)0x0E0406C))
+#define FMV_HOFF (*((unsigned short *)0x0E0406E))
+#define FMV_VPIX (*((unsigned short *)0x0E04070))
+#define FMV_HPIX (*((unsigned short *)0x0E04072))
+#define FMV_SYSCMD (*((unsigned short *)0x0E040C0))
+#define FMV_VIDCMD (*((unsigned short *)0x0E040C2))
+#define FMV_PROG (*((unsigned short *)0x0E040DA))
+#define FMV_XFER (*((unsigned short *)0x0E040DE))
+
+#define FMV_RF2 (*((unsigned short *)0x0E040F2))
+#define FMV_RF4 (*((unsigned short *)0x0E040F4))
+#define FMV_R9C (*((unsigned short *)0x0E0409C))
+#define FMV_R92 (*((unsigned short *)0x0E04092))
+#define FMV_RC6 (*((unsigned short *)0x0E040C6))
+#define FMV_R88 (*((unsigned short *)0x0E04088))
+#define FMV_R8A (*((unsigned short *)0x0E0408A))
+#define FMV_RA0 (*((unsigned short *)0x0E040A0))
+#define FMV_IVEC (*((unsigned short *)0x0E040DC))
+#define FMV_TCNT (*((unsigned short *)0x0E04064))
+#define FMV_TRLD (*((unsigned short *)0x0E040AE))
+#define FMV_STRM (*((unsigned short *)0x0E040C4))
+#define FMV_DCLK (*((unsigned short *)0x0E04098))
+
+#define FMV_SCRPOS (*((unsigned long *)0x0E04074))
+#define FMV_DECOFF (*((unsigned long *)0x0E0407C))
+#define FMV_DECWIN (*((unsigned long *)0x0E04078))
+
+#define FMV_PICSZ (*((unsigned long *)0x0E04052))
+#define FMV_PICRT (*((unsigned short *)0x0E04056)
+#define FMV_TIMECD (*((unsigned long *)0x0E04058))
+#define FMV_TMPREF (*((unsigned short *)0x0E0405C))
+
 /* --- IMS66490 CD-Interface Controller (CDIC) ---  */
 
 /* Known buffers in RAM, filled by the CDIC */
