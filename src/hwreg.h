@@ -114,6 +114,17 @@
 #define DMA_CH0_MEM_ADR (*((unsigned long *)0x8000400c))
 #define DMA_CH0_DEV_ADR (*((unsigned long *)0x80004014))
 
+#define DMA_CH1_STATUS (*((unsigned byte *)0x80004040))
+#define DMA_CH1_ERROR (*((unsigned byte *)0x80004041))
+#define DMA_CH1_DEV_CTRL (*((unsigned byte *)0x80004044))
+#define DMA_CH1_OP_CTRL (*((unsigned byte *)0x80004045))
+#define DMA_CH1_SEQ_CTRL (*((unsigned byte *)0x80004046))
+#define DMA_CH1_CHAN_CTRL (*((unsigned byte *)0x80004047))
+#define DMA_CH1_MEM_TRANS_CNT (*((unsigned short *)0x8000404a))
+#define DMA_CH1_MEM_ADR (*((unsigned long *)0x8000404c))
+#define DMA_CH1_DEV_ADR (*((unsigned long *)0x80004054))
+
+
 /* --- SCC68070 UART --- */
 
 #define UART_CSR (*((unsigned char *)0x80002015))

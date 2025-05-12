@@ -20,7 +20,13 @@ unsigned short int_dbuf = 0;
 unsigned short int_audctl = 0;
 unsigned short int_fma_status = 0;
 unsigned short int_fmv_status = 0;
+unsigned char int_dma_csr = 0;
+unsigned char int_dma_csr2 = 0;
+unsigned char int_dma_csr3 = 0;
 unsigned int int_fma_dclk = 0;
+char do_dma = 0;
+
+unsigned short mpeg_buffer[0x500];
 
 /* Used to store register information during a test */
 /* We don't want to make any prints during the test as the baud rate is too slow */
@@ -364,6 +370,7 @@ void test_fmv_skyways()
 {
 	unsigned short *dbuf;
 	int i, j;
+	int do_dma_was_done = 1;
 
 	CDIC_FILE = 0x0100;		/* MODE2 File filter */
 	CDIC_CHAN = 0x0001;		/* We want all the channels! */
@@ -409,7 +416,8 @@ void test_fmv_skyways()
 	FMV_IER = 0xf7cf;
 #endif
 
-#define WORDCNT (0x0484 + 6)
+#define WORDCNT (0x0484)
+
 	bufpos = 0;
 	fma_irq_occured = 0;
 	fmv_irq_occured = 0;
@@ -420,10 +428,11 @@ void test_fmv_skyways()
 			cdic_irq_occured = 0;
 			dbuf = (int_dbuf & 1) ? CDIC_RAM_DBUF1 : CDIC_RAM_DBUF0;
 
-			reg_buffer[bufpos][0] = dbuf[4];
-			reg_buffer[bufpos][1] = dbuf[5];
-			reg_buffer[bufpos][2] = dbuf[6];
-			reg_buffer[bufpos][3] = dbuf[7];
+			reg_buffer[bufpos][0] = int_dma_csr;
+			reg_buffer[bufpos][1] = int_dma_csr2;
+			reg_buffer[bufpos][2] = int_dma_csr3;
+			reg_buffer[bufpos][3] = do_dma_was_done;
+			reg_buffer[bufpos][4] = do_dma;
 
 			if (dbuf[3] & 0x0200)
 			{
@@ -431,6 +440,17 @@ void test_fmv_skyways()
 				for (i = 0; i < 6; i++)
 				{
 					FMV_XFER = dbuf[6 + i];
+				}
+
+				for (i = 0; i < WORDCNT; i++)
+				{
+					mpeg_buffer[i] = dbuf[12 + i];
+				}
+
+				if (do_dma_was_done > 0)
+				{
+					do_dma = 1;
+					do_dma_was_done--;
 				}
 			}
 
@@ -473,7 +493,7 @@ void test_fmv_skyways()
 	for (i = 0; i < bufpos; i++)
 	{
 		printf("%3d ", i);
-		for (j = 0; j < 4; j++)
+		for (j = 0; j < 5; j++)
 		{
 			printf(" %04x", reg_buffer[i][j]);
 		}
