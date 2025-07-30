@@ -14,3 +14,6 @@ extern int bufpos;
 void print(char *format, ...);
 void resetcdic();
 void print_state();
+
+/* Only enable this, if sound parameter corruption shall be tested */
+/* #define SINE_CORRUPTION_TEST */

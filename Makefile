@@ -31,7 +31,8 @@ FILES   = $(OUTPUT)/main.r $(OUTPUT)/irq.r $(OUTPUT)/crc.r $(OUTPUT)/slave.r \
 	$(OUTPUT)/test_mode2_read.r \
 	$(OUTPUT)/test_audiomap.r \
 	$(OUTPUT)/test_audiomap_to_xa_play.r \
-	$(OUTPUT)/ribbit_sample.r
+	$(OUTPUT)/ribbit_sample.r \
+	$(OUTPUT)/sine_sample.r
 
 
 #LINKER CONFIGURATION
@@ -87,6 +88,10 @@ $(OUTPUT)/test_audiomap_to_xa_play.r: $(SRC)/test_audiomap_to_xa_play.c
 
 $(OUTPUT)/ribbit_sample.r: $(SRC)/ribbit_sample.c
 	$(CC) $(CCFLAGS) -O=2 $(SRC)/ribbit_sample.c
+
+$(OUTPUT)/sine_sample.r: $(SRC)/sine_sample.c
+	$(CC) $(CCFLAGS) -O=2 $(SRC)/sine_sample.c
+
 clean:
 	-@erase $(OUTPUT)/cm*
 	-@erase $(OUTPUT)/*.tmp

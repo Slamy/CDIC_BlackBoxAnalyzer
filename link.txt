@@ -12,6 +12,7 @@ out\test_toc_read.r
 out\test_audiomap.r
 out\test_audiomap_to_xa_play.r
 out\ribbit_sample.r
+out\sine_sample.r
 -l=D:\OS9\68000\lib\clib.l
 -l=D:\OS9\68000\lib\sys.l
 -l=D:\OS9\68000\lib\usr.l

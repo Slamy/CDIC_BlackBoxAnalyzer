@@ -1,6 +1,220 @@
+#include "sine_sample.h"
 #include "ribbit_sample.h"
 #include "hwreg.h"
 #include "framework.h"
+
+#ifdef SINE_CORRUPTION_TEST
+
+void wait_for_abuf_int()
+{
+	int_abuf = 0;
+	cdic_irq_occured = 0;
+	for (;;)
+	{
+		if (cdic_irq_occured)
+		{
+			cdic_irq_occured = 0;
+			if (int_abuf & 0x8000)
+			{
+				return;
+			}
+		}
+	}
+}
+
+/* The title "Golf Tips" is an interesting case.
+ * For some reason, emulators like MAME or the MiSTer CD-i core are struggling with
+ * correctly playing the click sound effect of the menu.
+ * Vincent Halver has found out that the sound parameters are partially corrupted.
+ * Since these are stored redundant, it might be interesting to know which set of parameters
+ * are actually used by the CDIC/DSP. This test aims to push sound data
+ * as 8BPS and 4BPS - because sound redundancy differs between them - and
+ * selectively corrupts certain sound parameter sets to find out which set of parameters
+ * should be used by emulators for accuracy.
+ */
+void play_audiomap_level_b()
+{
+#define CORRUPT_BYTE 0x00
+
+	*((unsigned short *)0x30280a) = 0x0000;
+	*((unsigned short *)0x30320a) = 0x0000;
+	CDIC_AUDCTL = 0x2800;
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+
+	/* Gracefully stop audiomap with 0xff coding */
+	*((unsigned short *)0x30280a) = 0x00ff;
+	*((unsigned short *)0x30320a) = 0x00ff;
+	wait_for_abuf_int();
+}
+
+void play_audiomap_level_a()
+{
+	*((unsigned short *)0x30280a) = 0x0010;
+	*((unsigned short *)0x30320a) = 0x0010;
+	CDIC_AUDCTL = 0x2800;
+
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+	wait_for_abuf_int();
+
+	/* Gracefully stop audiomap with 0xff coding */
+	*((unsigned short *)0x30280a) = 0x00ff;
+	*((unsigned short *)0x30320a) = 0x00ff;
+
+	wait_for_abuf_int();
+}
+
+void test_audiomap_play_corrupted_sound_parameters()
+{
+	int i;
+	printf("# test_audiomap_play_corrupted_sound_parameters()\n");
+
+	resetcdic();
+
+	/* Copy sample data to ADPCM buffers */
+	/* [:cdic] Coding 00s, 1 channels, 4 bits, 000049d4 frequency ->  213 ms between IRQs */
+
+	print("Level B unchanged\n");
+	memcpy((char *)0x30280c, levelb_bin, 2304);
+	memcpy((char *)0x30320c, levelb_bin + 2304, 2304);
+	play_audiomap_level_b();
+
+	/* Level B has 4 sound parameters as 4 copies stretched over
+	 * 16 bytes. A single ADPCM sector has 2304 bytes.
+	 * A sound group consists of 128 bytes. There are 18 of these in one sector.
+	 */
+	print("Level B corrupt 0-3\n");
+	memcpy((char *)0x30280c, levelb_bin, 2304);
+	memcpy((char *)0x30320c, levelb_bin + 2304, 2304);
+	for (i = 0; i < 18; i++)
+	{
+		((char *)0x30280c)[i * 128 + 0] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 1] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 2] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 3] = CORRUPT_BYTE;
+	}
+	play_audiomap_level_b();
+
+	print("Level B corrupt 4-7\n");
+	memcpy((char *)0x30280c, levelb_bin, 2304);
+	memcpy((char *)0x30320c, levelb_bin + 2304, 2304);
+	for (i = 0; i < 18; i++)
+	{
+		((char *)0x30280c)[i * 128 + 4] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 5] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 6] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 7] = CORRUPT_BYTE;
+	}
+	play_audiomap_level_b();
+
+	print("Level B corrupt 8-11\n");
+	memcpy((char *)0x30280c, levelb_bin, 2304);
+	memcpy((char *)0x30320c, levelb_bin + 2304, 2304);
+	for (i = 0; i < 18; i++)
+	{
+		((char *)0x30280c)[i * 128 + 8] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 9] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 10] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 11] = CORRUPT_BYTE;
+	}
+	play_audiomap_level_b();
+
+	print("Level B corrupt 12-15\n");
+	memcpy((char *)0x30280c, levelb_bin, 2304);
+	memcpy((char *)0x30320c, levelb_bin + 2304, 2304);
+	for (i = 0; i < 18; i++)
+	{
+		((char *)0x30280c)[i * 128 + 12] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 13] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 14] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 15] = CORRUPT_BYTE;
+	}
+	play_audiomap_level_b();
+
+	/* Copy sample data to ADPCM buffers */
+	/* [:cdic] Coding 00s, 1 channels, 8 bits, 000049d4 frequency ->  213 ms between IRQs */
+	memcpy((char *)0x30280c, levela_bin, 2304);
+	memcpy((char *)0x30320c, levela_bin + 2304, 2304);
+
+	print("Level A unchanged\n");
+	play_audiomap_level_a();
+
+	print("Level A corrupt 0-3\n");
+	memcpy((char *)0x30280c, levela_bin, 2304);
+	memcpy((char *)0x30320c, levela_bin + 2304, 2304);
+	for (i = 0; i < 18; i++)
+	{
+		((char *)0x30280c)[i * 128 + 0] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 1] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 2] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 3] = CORRUPT_BYTE;
+	}
+	play_audiomap_level_a();
+
+	print("Level A corrupt 4-7\n");
+	memcpy((char *)0x30280c, levela_bin, 2304);
+	memcpy((char *)0x30320c, levela_bin + 2304, 2304);
+	for (i = 0; i < 18; i++)
+	{
+		((char *)0x30280c)[i * 128 + 4] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 5] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 6] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 7] = CORRUPT_BYTE;
+	}
+	play_audiomap_level_a();
+
+	print("Level A corrupt 8-11\n");
+	memcpy((char *)0x30280c, levela_bin, 2304);
+	memcpy((char *)0x30320c, levela_bin + 2304, 2304);
+	for (i = 0; i < 18; i++)
+	{
+		((char *)0x30280c)[i * 128 + 8] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 9] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 10] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 11] = CORRUPT_BYTE;
+	}
+	play_audiomap_level_a();
+
+	print("Level A corrupt 12-15\n");
+	memcpy((char *)0x30280c, levela_bin, 2304);
+	memcpy((char *)0x30320c, levela_bin + 2304, 2304);
+	for (i = 0; i < 18; i++)
+	{
+		((char *)0x30280c)[i * 128 + 12] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 13] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 14] = CORRUPT_BYTE;
+		((char *)0x30280c)[i * 128 + 15] = CORRUPT_BYTE;
+	}
+	play_audiomap_level_a();
+
+	/*
+	It can be concluded that
+	- A Coding of 0x10 / Level A is only reading from 12-15
+	- A Coding of 0x00 / Level B is only reading from 4-7 and 12-15
+	- A Coding of 0x04 / Level C is also only reading from 4-7 and 12-15
+	- A Coding of 0x14 / Level ? is not working on real 210/05 hardware
+	*/
+}
+
+#else
 
 void collect_audiomap_registers(int marker, int timeout)
 {
@@ -245,3 +459,5 @@ void test_audiomap_play_abort_via_play_of_ff()
 	No IRQ. No Bit 15 of ABUF.
 	*/
 }
+
+#endif

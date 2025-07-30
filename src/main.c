@@ -289,6 +289,7 @@ char *argv[];
 	test_audiomap_play_stop();
 	test_cmd23();
 	test_cmd24();
+	test_audiomap_play_corrupted_sound_parameters();
 	*/
 
 	/* Select ONE test to execute! We don't want the tests to change each other...

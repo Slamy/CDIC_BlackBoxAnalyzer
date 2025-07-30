@@ -4,6 +4,8 @@
 
 int state = 0;
 
+#ifndef SINE_CORRUPTION_TEST
+
 static void collect_registers()
 {
 
@@ -238,3 +240,5 @@ void test_audiomap_to_xa_play(int target_disk)
     Interesting enough, the same issue occurs on the other disc. Curious.
     */
 }
+
+#endif
