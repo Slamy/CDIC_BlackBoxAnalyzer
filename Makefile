@@ -31,6 +31,7 @@ FILES   = $(OUTPUT)/main.r $(OUTPUT)/irq.r $(OUTPUT)/crc.r $(OUTPUT)/slave.r \
 	$(OUTPUT)/test_mode2_read.r \
 	$(OUTPUT)/test_audiomap.r \
 	$(OUTPUT)/test_audiomap_to_xa_play.r \
+	$(OUTPUT)/test_measure_seek_time.r \
 	$(OUTPUT)/ribbit_sample.r \
 	$(OUTPUT)/sine_sample.r
 
@@ -85,6 +86,9 @@ $(OUTPUT)/test_audiomap.r: $(SRC)/test_audiomap.c
 
 $(OUTPUT)/test_audiomap_to_xa_play.r: $(SRC)/test_audiomap_to_xa_play.c
 	$(CC) $(CCFLAGS) -O=2 $(SRC)/test_audiomap_to_xa_play.c
+
+$(OUTPUT)/test_measure_seek_time.r: $(SRC)/test_measure_seek_time.c
+	$(CC) $(CCFLAGS) -O=2 $(SRC)/test_measure_seek_time.c
 
 $(OUTPUT)/ribbit_sample.r: $(SRC)/ribbit_sample.c
 	$(CC) $(CCFLAGS) -O=2 $(SRC)/ribbit_sample.c

@@ -11,6 +11,7 @@ out\test_cdda_play.r
 out\test_toc_read.r
 out\test_audiomap.r
 out\test_audiomap_to_xa_play.r
+out\test_measure_seek_time.r
 out\ribbit_sample.r
 out\sine_sample.r
 -l=D:\OS9\68000\lib\clib.l

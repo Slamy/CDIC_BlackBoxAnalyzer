@@ -68,6 +68,9 @@ void print(char *format, ...)
 #endif
 }
 
+/* no baud rate setting on MiSTer ! */
+/* #define MISTER_CDI */
+
 /* Overwrite CDIC driver IRQ handling */
 void take_system()
 {
@@ -75,6 +78,7 @@ void take_system()
 	store_a6();
 
 	CDIC_IVEC = 0x2480;
+#ifndef MISTER_CDI
 	/* Only in SUPERVISOR mode, on-chip peripherals can be configured */
 	/* We abuse a CDIC IRQ to set the baud rate to 19200 */
 	*((unsigned long *)0x200) = SET_UART_BAUD; /* vector delivered by CDIC */
@@ -83,8 +87,10 @@ void take_system()
 	CDIC_DBUF = 0xc000; /* Execute command */
 	while (!cdic_irq_occured)
 		;
+	CDIC_DBUF = 0;
 
 	cdic_irq_occured = 0;
+#endif
 
 	/* Switch to actual IRQ handler */
 	*((unsigned long *)0x200) = CDIC_IRQ; /* vector delivered by CDIC */
@@ -290,11 +296,13 @@ char *argv[];
 	test_cmd23();
 	test_cmd24();
 	test_audiomap_play_corrupted_sound_parameters();
+	test_measure_seek_time();
 	*/
 
 	/* Select ONE test to execute! We don't want the tests to change each other...
 	 * The reset mechanism is still not fully understood
 	 */
+	test_measure_seek_time();
 
 	resetcdic();
 	printf("\nTest finished. Press Ctrl-C to reset!\n");
