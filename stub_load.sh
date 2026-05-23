@@ -12,4 +12,5 @@ echo -ne '\x03' > /dev/ttyUSB0
 wine cdilink.exe -port 5 -n -a 8000 -d build/cdictest.app -e
 
 # Have a terminal
-minicom -D /dev/ttyUSB0 -b 19200
+rm -f log_vmpeg
+minicom -D /dev/ttyUSB0 -b 19200 -C log_vmpeg

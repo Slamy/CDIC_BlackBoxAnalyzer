@@ -302,9 +302,8 @@ char *argv[];
 	/* Select ONE test to execute! We don't want the tests to change each other...
 	 * The reset mechanism is still not fully understood
 	 */
-	test_measure_seek_time();
+	test_cdda_play();
 
-	resetcdic();
 	printf("\nTest finished. Press Ctrl-C to reset!\n");
 	for (;;)
 		;
