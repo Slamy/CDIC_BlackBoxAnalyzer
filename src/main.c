@@ -249,7 +249,6 @@ u_short input;
 			{
 			}; /* Wait for SIG_BLANK */
 			frameDone = 0;
-
 		}
 
 		PlaySound(0);
@@ -265,7 +264,6 @@ u_short input;
 		{
 			waitamount++;
 		}
-
 
 	}
 
