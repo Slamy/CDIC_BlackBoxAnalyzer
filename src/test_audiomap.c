@@ -684,8 +684,8 @@ void test_audiomap_play_abort()
 	resetcdic();
 
 	/* [:cdic] Coding 05, 2 channels, 4 bits, 000049d4 frequency -> 106 ms between IRQs */
-	*((unsigned short *)0x30280a) = 0x0010;
-	*((unsigned short *)0x30320a) = 0x0010;
+	*((unsigned short *)0x30280a) = 0x0050;
+	*((unsigned short *)0x30320a) = 0x0050;
 
 	memcpy((char *)0x30280c, sinA, 2304);
 	memcpy((char *)0x30320c, sinB, 2304);
