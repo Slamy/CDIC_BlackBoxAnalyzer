@@ -31,9 +31,7 @@ FILES   = $(OUTPUT)/main.r $(OUTPUT)/irq.r $(OUTPUT)/crc.r $(OUTPUT)/slave.r \
 	$(OUTPUT)/test_mode2_read.r \
 	$(OUTPUT)/test_audiomap.r \
 	$(OUTPUT)/test_audiomap_to_xa_play.r \
-	$(OUTPUT)/test_measure_seek_time.r \
-	$(OUTPUT)/ribbit_sample.r \
-	$(OUTPUT)/sine_sample.r
+	$(OUTPUT)/test_measure_seek_time.r
 
 
 #LINKER CONFIGURATION
